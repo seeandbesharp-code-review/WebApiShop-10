@@ -123,6 +123,8 @@ public partial class db_shopContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("userLastName");
+            entity.Property(e => e.IsAdmin)
+                .HasColumnName("isAdmin");
         });
 
         modelBuilder.Entity<Rating>(entity =>

@@ -7,6 +7,10 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 public class UserService : IUserService
 {
@@ -53,21 +57,21 @@ public class UserService : IUserService
         return user;
     }
 
-    public async Task<ResultValidUser<UserDTO>> AddUser(UserWithPasswordDTO user)
+    public async Task<ResultValidUser<(UserDTO user, string token)>> AddUser(UserWithPasswordDTO user)
     {
         if (!IsValidEmail(user.UserEmail))
-            return new ResultValidUser<UserDTO>(false, false,true, null);
+            return new ResultValidUser<(UserDTO, string)>(false, false, true, (null, null));
         Password passwordAfterCheck = _passwordService.CheckPassword(user.UserPassword);
         if (passwordAfterCheck.Level < 3)
-            return new ResultValidUser<UserDTO>(true, false,false, null);
+            return new ResultValidUser<(UserDTO, string)>(true, false, false, (null, null));
         if (await EmailExists(user.UserEmail, user.UserId))
-            return new ResultValidUser<UserDTO>(false, true,false, null);
+            return new ResultValidUser<(UserDTO, string)>(false, true, false, (null, null));
         User user1 = _mapper.Map<UserWithPasswordDTO, User>(user);
         user1.Password = user.UserPassword;
-        UserDTO user2= _mapper.Map<User, UserDTO>(await _userRepository.AddUser(user1));
+        UserDTO user2 = _mapper.Map<User, UserDTO>(await _userRepository.AddUser(user1));
         await InvalidateUserCache(user2.UserId);
-        ResultValidUser<UserDTO> resultValidUser= new ResultValidUser<UserDTO>(false, false,false, user2);
-        return resultValidUser;
+        string token = GenerateToken(user2);
+        return new ResultValidUser<(UserDTO, string)>(false, false, false, (user2, token));
     }
     public async Task<ResultValidUser<bool>> UpdateUser(int id, UserWithPasswordDTO user)
     {
@@ -92,9 +96,12 @@ public class UserService : IUserService
             return new ResultValidUser<bool>(false, false, false, true);
         }
     }
-    public async Task<UserDTO> Login(LoginUserDTO loginUser)
+    public async Task<(UserDTO user, string token)> Login(LoginUserDTO loginUser)
     {
-        return _mapper.Map<User, UserDTO>(await _userRepository.Login(loginUser.UserEmail, loginUser.UserPassword));
+        UserDTO user = _mapper.Map<User, UserDTO>(await _userRepository.Login(loginUser.UserEmail, loginUser.UserPassword));
+        if (user == null) return (null, null);
+        string token = GenerateToken(user);
+        return (user, token);
     }
     
     public async Task<bool> EmailExists(string email,int id)
@@ -110,6 +117,26 @@ public class UserService : IUserService
     public bool IsValidEmail(string email)
     {
         return new EmailAddressAttribute().IsValid(email);
+    }
+
+    private string GenerateToken(UserDTO user)
+    {
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+        var claims = new[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+            new Claim(ClaimTypes.Email, user.UserEmail),
+            new Claim(ClaimTypes.GivenName, user.UserFirstName),
+            new Claim(ClaimTypes.Role, user.IsAdmin ? "Admin" : "User")
+        };
+        var token = new JwtSecurityToken(
+            issuer: _configuration["Jwt:Issuer"],
+            audience: _configuration["Jwt:Audience"],
+            claims: claims,
+            expires: DateTime.UtcNow.AddHours(1),
+            signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
+        );
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
     public async Task InvalidateUserCache(int userId)

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Services;
 using Repository;
 using DTOs;
@@ -19,6 +20,7 @@ namespace WebAPIShop.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<ActionResult<UserDTO>> Get(int id) 
         {
             UserDTO user = await _userService.GetUserById(id);
@@ -30,33 +32,40 @@ namespace WebAPIShop.Controllers
         }
   
         [HttpPost]
+        [AllowAnonymous]
         public async Task<ActionResult<UserDTO>> Post([FromBody] UserWithPasswordDTO user)
         {
-            ResultValidUser<UserDTO> createdUser = await _userService.AddUser(user);
-            if (createdUser.data!=null)
-                return CreatedAtAction(nameof(Get), new { id = createdUser.data.UserId }, createdUser.data);
-            if (createdUser.InvalidPassword)
+            ResultValidUser<(UserDTO user, string token)> result = await _userService.AddUser(user);
+            if (result.data.user != null)
+            {
+                Response.Cookies.Append("jwt", result.data.token, new CookieOptions { HttpOnly = true, Secure = false, SameSite = SameSiteMode.Lax });
+                return CreatedAtAction(nameof(Get), new { id = result.data.user.UserId }, result.data.user);
+            }
+            if (result.InvalidPassword)
                 return BadRequest("Password is not strong enough");
-            if (createdUser.IsValidEmail)
+            if (result.IsValidEmail)
                 return BadRequest("Email is not valid");
             return BadRequest("Email already exists");
         }
 
         [HttpPost("login")]
+        [AllowAnonymous]
         public async Task<ActionResult<UserDTO>> Login([FromBody] LoginUserDTO loginUser)
         {
             if (loginUser == null || string.IsNullOrWhiteSpace(loginUser.UserEmail))
                 return BadRequest("Email is required");
-            UserDTO user = await _userService.Login(loginUser);
+            (UserDTO user, string token) = await _userService.Login(loginUser);
             if (user != null)
             {
                 _logger.LogInformation("Login attempted with User Name, {0} and password {1}", loginUser.UserEmail, loginUser.UserPassword);
+                Response.Cookies.Append("jwt", token, new CookieOptions { HttpOnly = true, Secure = false, SameSite = SameSiteMode.Lax });
                 return Ok(user);
             }
             return Unauthorized("Invalid email or password");
         }
        
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> Put(int id, [FromBody] UserWithPasswordDTO user)
         {
             ResultValidUser<bool> isUpdateSuccessfulResult = await _userService.UpdateUser(id, user);

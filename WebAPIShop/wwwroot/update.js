@@ -38,7 +38,7 @@ const update = async () => {
             UserEmail: userEmail.value,
             UserFirstName: firstName.value,
             UserLastName: lastName.value,
-            userPassword: password.value
+            UserPassword: password.value
         }
         const url = new URL(`https://localhost:44324/api/Users/${theCurrentUser.userId}`)
         const response = await fetch(url, {
@@ -46,12 +46,13 @@ const update = async () => {
             headers: {
                 'Content-Type': 'application/json'
             },
+            credentials: 'include',
             body: JSON.stringify(updateUser)
         });
         if (response.ok) {
             alert(" עודכן בהצלחה")
             sessionStorage.setItem("currentUser", JSON.stringify(updateUser))
-            welcomeText.innerHTML = `שלום ${JSON.parse(sessionStorage.getItem('currentUser')).UserFirstName} <br> !התחברת בהצלחה`
+            welcomeText.innerHTML = `שלום ${JSON.parse(sessionStorage.getItem('currentUser')).userFirstName} <br> !התחברת בהצלחה`
         }
 
         else {

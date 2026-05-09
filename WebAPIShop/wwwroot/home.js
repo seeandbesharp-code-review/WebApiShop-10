@@ -75,6 +75,7 @@ const register = async () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
+                credentials: 'include',
                 body: JSON.stringify(newUser)
             });
             if (response.status == 400) {
@@ -104,17 +105,17 @@ const login = async () => {
             headers: {
                 'Content-Type': 'application/json'
             },
+            credentials: 'include',
             body: JSON.stringify(loginUser)
         });
-        if (response.status == 204) { 
-            alert("אינך קיים במערכת נא הרשם")
-        }
-
-        else {
+        if (response.ok) {
             alert("התחברת בהצלחה")
             const currentUser = await response.json();
             sessionStorage.setItem("currentUser", JSON.stringify(currentUser))
             window.location.href = "update.html"
+        }
+        else {
+            alert("אינך קיים במערכת נא הרשם")
         }
     } catch (err) {
         alert(err)

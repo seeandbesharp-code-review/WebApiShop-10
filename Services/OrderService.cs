@@ -41,7 +41,12 @@ public class OrderService : IOrderService
 
     public async Task<OrderDTO> GetOrderById(int id)
     {
-        return _mapper.Map < Order, OrderDTO > (await _orderRepository.GetOrderById(id));
+        return _mapper.Map<Order, OrderDTO>(await _orderRepository.GetOrderById(id));
+    }
+
+    public async Task<List<OrderDTO>> GetAllOrders()
+    {
+        return _mapper.Map<List<Order>, List<OrderDTO>>(await _orderRepository.GetAllOrders());
     }
 
 }

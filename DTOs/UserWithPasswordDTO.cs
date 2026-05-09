@@ -6,6 +6,6 @@ using System.Threading.Tasks;
 
 namespace DTOs
 {
-    public record UserWithPasswordDTO( int UserId,string UserEmail,string UserFirstName,string UserLastName, string UserPassword);
+    public record UserWithPasswordDTO(int UserId, string UserEmail, string UserFirstName, string UserLastName, string UserPassword, bool IsAdmin = false);
            
 }
