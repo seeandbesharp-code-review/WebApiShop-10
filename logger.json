@@ -40,3 +40,10 @@
 {"timestamp":"2026-05-10 02:06:33.4808","level":"Info","message":"Login attempted with User Name, moshe.ab@example.com and password G2*fD9&sL05vK","logger":"WebAPIShop.Controllers.UsersController"}
 {"timestamp":"2026-05-10 02:07:55.6361","level":"Info","message":"Login attempted with User Name, moshe.ab@example.com and password G2*fD9&sL05vK","logger":"WebAPIShop.Controllers.UsersController"}
 {"timestamp":"2026-05-10 02:08:45.3174","level":"Info","message":"Login attempted with User Name, sara.cohen@example.com and password Th7@nB$uR41xW","logger":"WebAPIShop.Controllers.UsersController"}
+{"timestamp":"2026-05-12 01:27:20.4083","level":"Info","message":"Login attempted with User Name, sara.cohen@example.com and password Th7@nB$uR41xW","logger":"WebAPIShop.Controllers.UsersController"}
+{"timestamp":"2026-05-12 01:35:05.0427","level":"Info","message":"Login attempted with User Name, sara.cohen@example.com and password Th7@nB$uR41xW","logger":"WebAPIShop.Controllers.UsersController"}
+{"timestamp":"2026-05-12 01:41:33.9736","level":"Info","message":"Login attempted with User Name, sara.cohen@example.com and password Th7@nB$uR41xW","logger":"WebAPIShop.Controllers.UsersController"}
+{"timestamp":"2026-05-12 01:44:20.7824","level":"Info","message":"Login attempted with User Name, sara.cohen@example.com and password Th7@nB$uR41xW","logger":"WebAPIShop.Controllers.UsersController"}
+{"timestamp":"2026-05-12 01:45:24.4655","level":"Info","message":"Login attempted with User Name, sara.cohen@example.com and password Th7@nB$uR41xW","logger":"WebAPIShop.Controllers.UsersController"}
+{"timestamp":"2026-05-12 01:47:10.0523","level":"Info","message":"Login attempted with User Name, koka-kola@gmail.com and password koka-kola@","logger":"WebAPIShop.Controllers.UsersController"}
+{"timestamp":"2026-05-12 01:57:24.7078","level":"Info","message":"Login attempted with User Name, sara.cohen@example.com and password Th7@nB$uR41xW","logger":"WebAPIShop.Controllers.UsersController"}

@@ -51,8 +51,15 @@ const update = async () => {
         });
         if (response.ok) {
             alert(" עודכן בהצלחה")
-            sessionStorage.setItem("currentUser", JSON.stringify(updateUser))
-            welcomeText.innerHTML = `שלום ${JSON.parse(sessionStorage.getItem('currentUser')).userFirstName} <br> !התחברת בהצלחה`
+            const updatedUser = {
+                userId: theCurrentUser.userId,
+                userEmail: userEmail.value,
+                userFirstName: firstName.value,
+                userLastName: lastName.value,
+                isAdmin: theCurrentUser.isAdmin
+            }
+            sessionStorage.setItem("currentUser", JSON.stringify(updatedUser))
+            welcomeText.innerHTML = `שלום ${updatedUser.userFirstName} <br> !עודכן בהצלחה`
         }
 
         else {
