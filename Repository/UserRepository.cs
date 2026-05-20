@@ -29,9 +29,9 @@ namespace Repository
 
 
 
-        public async Task<User> Login(string email, string passsword)
+        public async Task<User> Login(string email)
         {
-            return await _ShopContext.Users.FirstOrDefaultAsync(x => x.UserEmail == email && x.Password == passsword);    
+            return await _ShopContext.Users.FirstOrDefaultAsync(x => x.UserEmail == email);
         }
 
 

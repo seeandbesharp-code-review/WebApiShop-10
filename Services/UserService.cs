@@ -7,10 +7,11 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using BC = BCrypt.Net.BCrypt;
+using Microsoft.IdentityModel.Tokens;
 
 public class UserService : IUserService
 {
@@ -67,7 +68,7 @@ public class UserService : IUserService
         if (await EmailExists(user.UserEmail, user.UserId))
             return new ResultValidUser<(UserDTO, string)>(false, true, false, (null, null));
         User user1 = _mapper.Map<UserWithPasswordDTO, User>(user);
-        user1.Password = user.UserPassword;
+        user1.Password = BC.HashPassword(user.UserPassword);
         UserDTO user2 = _mapper.Map<User, UserDTO>(await _userRepository.AddUser(user1));
         await InvalidateUserCache(user2.UserId);
         string token = GenerateToken(user2);
@@ -90,7 +91,7 @@ public class UserService : IUserService
         {
             User user1 = _mapper.Map<UserWithPasswordDTO, User>(user);
             user1.UserId = id;
-            user1.Password = user.UserPassword;
+            user1.Password = BC.HashPassword(user.UserPassword);
             await _userRepository.UpdateUser(user1);
             await InvalidateUserCache(id);
             return new ResultValidUser<bool>(false, false, false, true);
@@ -98,8 +99,10 @@ public class UserService : IUserService
     }
     public async Task<(UserDTO user, string token)> Login(LoginUserDTO loginUser)
     {
-        UserDTO user = _mapper.Map<User, UserDTO>(await _userRepository.Login(loginUser.UserEmail, loginUser.UserPassword));
-        if (user == null) return (null, null);
+        User userEntity = await _userRepository.Login(loginUser.UserEmail);
+        if (userEntity == null || !BC.Verify(loginUser.UserPassword, userEntity.Password))
+            return (null, null);
+        UserDTO user = _mapper.Map<User, UserDTO>(userEntity);
         string token = GenerateToken(user);
         return (user, token);
     }
