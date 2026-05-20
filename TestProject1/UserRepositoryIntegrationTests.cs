@@ -48,13 +48,13 @@ namespace TestProject1
         }
 
         [Fact]
-        public async Task Login_ReturnsCorrectUser_WhenCredentialsMatch()
+        public async Task Login_ReturnsCorrectUser_WhenEmailExists()
         {
             var user = new User { UserFirstName = "Charlie", UserLastName = "shwartz", UserEmail = "Charlie@.com", Password = "Charlie@.com!@" };
             await _dbContext.Users.AddAsync(user);
             await _dbContext.SaveChangesAsync();
             // Act
-            var result = await _userRepository.Login("Charlie@.com", "Charlie@.com!@");
+            var result = await _userRepository.Login("Charlie@.com");
             // Assert
             Assert.NotNull(result);
             Assert.Equal(user.UserId, result.UserId);
@@ -62,13 +62,10 @@ namespace TestProject1
         }
 
         [Fact]
-        public async Task Login_ReturnsNull_WhenCredentialsAreIncorrect()
+        public async Task Login_ReturnsNull_WhenEmailDoesNotExist()
         { 
-            var testUser = new User { UserFirstName = "Alice",UserLastName="cohen", UserEmail = "Alice@.com", Password= "Alice@.com!@" };
-            await _dbContext.Users.AddAsync(testUser);
-            await _dbContext.SaveChangesAsync();
             // Act
-            var result = await _userRepository.Login("Alice@.com", "WrongPassword");
+            var result = await _userRepository.Login("nonexistent@.com");
             // Assert
             Assert.Null(result);
         }

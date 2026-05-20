@@ -9,6 +9,18 @@ services:
     volumes:
       - redis_data:/data
 
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    ports:
+      - "1433:1433"
+    environment:
+      SA_PASSWORD: "Your_password123"
+      ACCEPT_EULA: "Y"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+      - ./sql-init:/init
+    command: /bin/bash -c "/opt/mssql/bin/sqlservr & sleep 20 && /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'Your_password123' -C -Q \"IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = '_API_shop') CREATE DATABASE [_API_shop]\" && /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'Your_password123' -C -d _API_shop -i /init/init.sql && wait"
+
   kafka:
     image: apache/kafka:latest
     ports:
@@ -43,12 +55,14 @@ services:
       - "8080:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__new_connection=Data Source=sqlserver;Initial Catalog=_API_shop;User ID=sa;Password=Your_password123;Trust Server Certificate=True
       - ConnectionStrings__Redis=redis:6379,password=yourpassword
       - Kafka__BootstrapServers=kafka:9092
       - Kafka__Topic=orders
     depends_on:
       - redis
       - kafka
+      - sqlserver
 
   consumer:
     build:
@@ -62,3 +76,4 @@ services:
 
 volumes:
   redis_data:
+  sqlserver_data:

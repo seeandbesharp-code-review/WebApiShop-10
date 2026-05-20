@@ -67,41 +67,22 @@ namespace TestProject1
             Assert.Null(result);
         }
         [Fact]
-        public async Task Login_ValidCredentials_ReturnsUser()
+        public async Task Login_ValidEmail_ReturnsUser()
         {
             // Arrange
             var users = new List<User>
             {
                 new User { UserId = 1, UserEmail = "alice@test.com", Password = "password123!@" },
-
-                new User { UserId = 2, UserEmail = "alice@test.com", Password = "wrongpassword!@" }
-
+                new User { UserId = 2, UserEmail = "bob@test.com", Password = "bob123!@" }
             };
             var mockContext = new Mock<db_shopContext>();
             mockContext.Setup(c => c.Users).ReturnsDbSet(users);
             var userRepository = new UserRepository(mockContext.Object);
             // Act
-            var result = await userRepository.Login("alice@test.com", "password123!@");
+            var result = await userRepository.Login("alice@test.com");
             // Assert
             Assert.NotNull(result);
             Assert.Equal(1, result.UserId);
-        }
-        [Fact]
-        public async Task Login_InvalidCredentials_ReturnsNull()
-        {
-            // Arrange
-            var users = new List<User>
-            {
-                new User { UserId = 1, UserEmail = "alice@test.com", Password = "password123!@" },
-            };
-            var mockContext = new Mock<db_shopContext>();
-
-            mockContext.Setup(c => c.Users).ReturnsDbSet(users);
-            var userRepository = new UserRepository(mockContext.Object);
-            // Act
-            var result = await userRepository.Login("alice@test.com", "wrongpassword");
-            // Assert
-            Assert.Null(result);
         }
         [Fact]
         public async Task Login_EmailExists_WrongEmail_ReturnsNull()
@@ -115,7 +96,7 @@ namespace TestProject1
             mockContext.Setup(c => c.Users).ReturnsDbSet(users);
             var userRepository = new UserRepository(mockContext.Object);
             // Act
-            var result = await userRepository.Login("alic@test.com", "password123!@");
+            var result = await userRepository.Login("alic@test.com");
             // Assert
             Assert.Null(result); // מחזיר null כי המייל לא תואם
         }

@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using DTOs;
 using Entities;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Org.BouncyCastle.Crypto;
 using Repository;
 using Services;
 using System;
@@ -20,6 +20,7 @@ namespace TestProject1
         private readonly Mock<IProductRepository> _productRepositoryMock;
         private readonly Mock<IMapper> _mapperMock;
         private readonly Mock<ILogger<OrderService>> _loggerMock;
+        private readonly Mock<IConfiguration> _configurationMock;
         private readonly OrderService _orderService;
 
         public OrderServiceUnitTest()
@@ -28,12 +29,16 @@ namespace TestProject1
             _productRepositoryMock = new Mock<IProductRepository>();
             _mapperMock = new Mock<IMapper>();
             _loggerMock = new Mock<ILogger<OrderService>>();
+            _configurationMock = new Mock<IConfiguration>();
+            _configurationMock.Setup(c => c["Kafka:BootstrapServers"]).Returns("localhost:9092");
+            _configurationMock.Setup(c => c["Kafka:Topic"]).Returns("orders");
 
             _orderService = new OrderService(
                 _orderRepositoryMock.Object,
                 _mapperMock.Object,
                 _productRepositoryMock.Object,
-                _loggerMock.Object
+                _loggerMock.Object,
+                _configurationMock.Object
             );
         }
 
